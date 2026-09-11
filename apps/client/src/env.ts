@@ -11,6 +11,7 @@ export const env = createEnv({
   clientPrefix: 'VITE_',
   client: {
     VITE_APP_TITLE: z.string().min(1).default('Formlyst'),
+    VITE_SITE_URL: z.string().url().optional(),
   },
   runtimeEnv: {
     ...import.meta.env,

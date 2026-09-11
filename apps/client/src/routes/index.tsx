@@ -1,6 +1,22 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { absoluteUrl, seo } from '#/lib/seo'
+import { env } from '#/env'
 
-export const Route = createFileRoute('/')({ component: Home })
+export const Route = createFileRoute('/')({
+  head: ({ match }) =>
+    seo({
+      canonicalPath: match.pathname,
+      jsonLd: {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: env.VITE_APP_TITLE,
+        description:
+          'Formlyst is a modern form builder — create beautiful forms and collect responses effortlessly.',
+        url: absoluteUrl(match.pathname),
+      },
+    }),
+  component: Home,
+})
 
 function Home() {
   return (
