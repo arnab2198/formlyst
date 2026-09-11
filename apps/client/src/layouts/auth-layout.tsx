@@ -1,10 +1,21 @@
+import { ClientOnly } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { Logo } from '#/components/common/logo'
+import { ModeToggle, ModeToggleSkeleton } from '#/components/common/mode-toggle'
 import { env } from '#/env'
+
+const MODE_TOGGLE_PLACEMENT =
+  'absolute top-6 right-6 z-10 sm:top-8 sm:right-10 lg:right-16'
 
 export function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
+    <div className="relative grid min-h-svh lg:grid-cols-2">
+      <ClientOnly
+        fallback={<ModeToggleSkeleton className={MODE_TOGGLE_PLACEMENT} />}
+      >
+        <ModeToggle className={MODE_TOGGLE_PLACEMENT} />
+      </ClientOnly>
+
       <div className="flex flex-col gap-10 px-6 py-8 sm:px-10 lg:px-16">
         <Logo />
         <div className="flex flex-1 items-center justify-center">
