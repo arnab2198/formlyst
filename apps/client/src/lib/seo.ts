@@ -1,4 +1,5 @@
 import { type AnyRouteMatch } from '@tanstack/react-router'
+import { env } from '#/env'
 import appCss from '../styles.css?url'
 
 interface Seo {
@@ -18,7 +19,7 @@ export const seo: Seo = {
       content: 'width=device-width, initial-scale=1',
     },
     {
-      title: 'TanStack Start Starter',
+      title: env.VITE_APP_TITLE,
     },
   ],
   links: [

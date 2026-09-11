@@ -46,10 +46,12 @@ Run these from the repo root. Each fans out to both apps via `pnpm --filter`; ap
 
 ### client specifics
 
-- File-based routing via TanStack Router: routes live in `src/routes/`, with `src/routeTree.gen.ts` auto-generated — never hand-edit it.
+- All files under `src/` use kebab-case filenames (`auth-layout.tsx`, `password-input.tsx`), regardless of the PascalCase export they contain — except TanStack Router route files, whose names follow the routing convention below.
+- File-based routing via TanStack Router: routes live in `src/routes/`, with `src/routeTree.gen.ts` auto-generated — never hand-edit it. A `_`-prefixed file (e.g. `src/routes/_auth.tsx`) is a pathless layout: it wraps a group of routes in a shared layout without adding a URL segment, so `src/routes/_auth/signin.tsx` resolves to `/signin`, not `/auth/signin`. Page content lives in `src/pages/**`; route files just wire it up.
+- Static brand/media files (logo, illustrations, favicons) live in `public/images/` and are referenced by absolute path (`/images/logo.svg`) rather than imported — they're served as-is with no bundler processing.
 - Env vars are validated with [T3Env](https://env.t3.gg/)/Zod in `src/env.ts` — client-exposed vars must be prefixed `VITE_` and declared there.
 - Path aliases `#/*` and `@/*` both resolve to `./src/*`.
-- UI components use [shadcn/ui](https://ui.shadcn.com/) (`style: "new-york"`, Tailwind v4, lucide icons). Add a component with `pnpm dlx shadcn@latest add <component>`.
+- UI components use [shadcn/ui](https://ui.shadcn.com/) (`style: "radix-mira"`, Tailwind v4, lucide icons). Add a component with `pnpm dlx shadcn@latest add <component>`.
 - Linting is eslint via `@tanstack/eslint-config`; formatting is prettier.
 
 ## Project structure
