@@ -9,8 +9,8 @@ import {
   FieldLabel,
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
-import { forgotPasswordSchema } from '#/schemas/forgot-password'
-import type { ForgotPasswordFormValues } from '#/schemas/forgot-password'
+import { forgotPasswordSchema } from '@formlyst/utils'
+import type { ForgotPasswordFormValues } from '@formlyst/utils'
 import { Fragment } from 'react'
 
 const DEFAULT_VALUES: ForgotPasswordFormValues = {

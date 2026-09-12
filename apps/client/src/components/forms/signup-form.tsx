@@ -9,8 +9,8 @@ import {
   FieldLabel,
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
-import { signUpSchema } from '#/schemas/signup'
-import type { SignUpFormValues } from '#/schemas/signup'
+import { signUpSchema } from '@formlyst/utils'
+import type { SignUpFormValues } from '@formlyst/utils'
 import { Fragment } from 'react'
 
 const DEFAULT_VALUES: SignUpFormValues = {

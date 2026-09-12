@@ -14,6 +14,12 @@ importers:
 
   apps/api:
     dependencies:
+      '@formlyst/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@formlyst/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@nestjs/common':
         specifier: ^12.0.1
         version: 12.0.1(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -87,6 +93,12 @@ importers:
       '@fontsource/poppins':
         specifier: ^5.3.0
         version: 5.3.0
+      '@formlyst/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@formlyst/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@hookform/resolvers':
         specifier: ^5.9.1
         version: 5.9.1(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.88.0(react@19.3.0))(zod@4.6.2)
@@ -208,6 +220,22 @@ importers:
       vite:
         specifier: ^8.0.0
         version: 8.3.0(@types/node@22.20.2)(jiti@2.7.0)
+
+  packages/types:
+    devDependencies:
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.3
+
+  packages/utils:
+    dependencies:
+      zod:
+        specifier: ^4.3.6
+        version: 4.6.2
+    devDependencies:
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.3
 
 packages:
 

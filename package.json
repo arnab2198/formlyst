@@ -21,14 +21,16 @@
     "format:fix": "pnpm --filter api run format && pnpm --filter client run format:fix",
     "format:fix:api": "pnpm --filter api run format",
     "format:fix:client": "pnpm --filter client run format:fix",
-    "build": "pnpm --filter api run build && pnpm --filter client run build",
-    "build:api": "pnpm --filter api run build",
-    "build:client": "pnpm --filter client run build",
+    "build": "pnpm run build:packages && pnpm --filter api run build && pnpm --filter client run build",
+    "build:api": "pnpm run build:packages && pnpm --filter api run build",
+    "build:client": "pnpm run build:packages && pnpm --filter client run build",
+    "build:packages": "pnpm --filter \"@formlyst/*\" run build",
     "test": "pnpm --filter api run test",
     "test:api": "pnpm --filter api run test",
-    "typecheck": "pnpm --filter api run typecheck && pnpm --filter client run typecheck",
-    "typecheck:api": "pnpm --filter api run typecheck",
-    "typecheck:client": "pnpm --filter client run typecheck"
+    "typecheck": "pnpm run build:packages && pnpm --filter api run typecheck && pnpm --filter client run typecheck",
+    "typecheck:api": "pnpm run build:packages && pnpm --filter api run typecheck",
+    "typecheck:client": "pnpm run build:packages && pnpm --filter client run typecheck",
+    "typecheck:packages": "pnpm --filter \"@formlyst/*\" run typecheck"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

@@ -11,8 +11,8 @@ import {
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { PasswordInput } from '#/components/ui/password-input'
-import { signInSchema } from '#/schemas/signin'
-import type { SignInFormValues } from '#/schemas/signin'
+import { signInSchema } from '@formlyst/utils'
+import type { SignInFormValues } from '@formlyst/utils'
 import { useHydrated, Link } from '@tanstack/react-router'
 import { Fragment } from 'react'
 

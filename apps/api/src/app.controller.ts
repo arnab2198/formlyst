@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import type { User } from '@formlyst/types';
 import { AppService } from './app.service.js';
 
 @Controller()
@@ -8,5 +9,10 @@ export class AppController {
   @Get()
   getHello(): string {
     return this.appService.getHello();
+  }
+
+  @Get('user')
+  getUser(): User {
+    return this.appService.getUser();
   }
 }
