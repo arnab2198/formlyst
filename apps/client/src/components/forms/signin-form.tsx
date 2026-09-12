@@ -13,9 +13,8 @@ import { Input } from '#/components/ui/input'
 import { PasswordInput } from '#/components/ui/password-input'
 import { signInSchema } from '#/schemas/signin'
 import type { SignInFormValues } from '#/schemas/signin'
-import { useHydrated } from '@tanstack/react-router'
+import { useHydrated, Link } from '@tanstack/react-router'
 import { Fragment } from 'react'
-import { Link } from '@tanstack/react-router'
 
 const DEFAULT_VALUES: SignInFormValues = {
   email: '',
@@ -74,12 +73,12 @@ export function SignInForm() {
               <Field data-invalid={fieldState.invalid}>
                 <div className="flex items-center justify-between">
                   <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-                  <a
-                    href="/forgot-password"
+                  <Link
+                    to="/forgot-password"
                     className="text-xs font-medium text-primary underline-offset-4 hover:underline"
                   >
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
                 <PasswordInput
                   {...field}
@@ -144,7 +143,7 @@ export function SignInForm() {
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{' '}
         <Link
-          to="/"
+          to="/signup"
           className="font-medium text-primary underline-offset-4 hover:underline"
         >
           Sign up
