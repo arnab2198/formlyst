@@ -1,4 +1,5 @@
 import TanstackDevtoolsPanel from '#/components/common/tanstack-devtools'
+import { Toaster } from '#/components/ui/sonner'
 import { seo } from '#/lib/seo'
 import { ThemeProvider } from '#/providers/theme-provider'
 import { getInitialTheme } from '#/server/theme/theme.functions'
@@ -61,6 +62,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <ThemeProvider>
           {children}
+          <Toaster />
           <TanstackDevtoolsPanel />
         </ThemeProvider>
         <Scripts />

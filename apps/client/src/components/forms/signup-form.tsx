@@ -1,76 +1,65 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useHydrated, Link } from '@tanstack/react-router'
-import { Controller, useForm } from 'react-hook-form'
-import { Button } from '#/components/ui/button'
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from '#/components/ui/field'
-import { Input } from '#/components/ui/input'
-import { signUpSchema } from '@formlyst/utils'
-import type { SignUpFormValues } from '@formlyst/utils'
-import { Fragment } from 'react'
+import { Link } from '@tanstack/react-router'
+import { Fragment, useState } from 'react'
+import { toast } from 'sonner'
+import { SignUpStepOne } from './signup/signup-step-one'
+import { SignUpStepThree } from './signup/signup-step-three'
+import { SignUpStepTwo } from './signup/signup-step-two'
+import type {
+  SignUpDetailsStepValues,
+  SignUpEmailStepValues,
+  SignUpOtpStepValues,
+} from '@formlyst/utils'
 
-const DEFAULT_VALUES: SignUpFormValues = {
-  email: '',
-}
+const TOTAL_STEPS = 3
+
+type Step = 1 | 2 | 3
 
 export function SignUpForm() {
-  const hydrated = useHydrated()
-  const form = useForm<SignUpFormValues>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: DEFAULT_VALUES,
-    mode: 'onTouched',
-    reValidateMode: 'onChange',
-    disabled: !hydrated,
-  })
+  const [step, setStep] = useState<Step>(1)
+  const [email, setEmail] = useState('')
 
-  function onSubmit(values: SignUpFormValues) {
-    console.log(values)
+  function handleEmailStep(values: SignUpEmailStepValues) {
+    setEmail(values.email)
+    setStep(2)
+  }
+
+  function handleOtpStep(_values: SignUpOtpStepValues) {
+    setStep(3)
+  }
+
+  function handleDetailsStep(values: SignUpDetailsStepValues) {
+    console.log({ email, ...values })
+    toast.success('Registered successfully')
+  }
+
+  function goToPreviousStep() {
+    setStep((current) => (current === 3 ? 2 : 1))
   }
 
   return (
     <Fragment>
-      <form
-        className="mt-6"
-        noValidate
-        autoComplete="off"
-        onSubmit={form.handleSubmit(onSubmit)}
-      >
-        <FieldGroup>
-          <Controller
-            name="email"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name}>Email</FieldLabel>
-                <Input
-                  {...field}
-                  id={field.name}
-                  type="email"
-                  autoComplete="off"
-                  placeholder="you@example.com"
-                  aria-invalid={fieldState.invalid}
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
+      <p className="mt-2 text-xs font-medium text-muted-foreground">
+        Step {step} of {TOTAL_STEPS}
+      </p>
 
-          <Button
-            disabled={!hydrated}
-            size="lg"
-            type="submit"
-            className="w-full"
-          >
-            Continue
-          </Button>
-        </FieldGroup>
-      </form>
+      {step === 1 && (
+        <SignUpStepOne defaultEmail={email} onSubmitStep={handleEmailStep} />
+      )}
+
+      {step === 2 && (
+        <SignUpStepTwo
+          email={email}
+          onSubmitStep={handleOtpStep}
+          onBack={goToPreviousStep}
+        />
+      )}
+
+      {step === 3 && (
+        <SignUpStepThree
+          onSubmitStep={handleDetailsStep}
+          onBack={goToPreviousStep}
+        />
+      )}
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{' '}
