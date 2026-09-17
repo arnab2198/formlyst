@@ -46,43 +46,49 @@ export function SignUpStepThree({
       onSubmit={form.handleSubmit(onSubmitStep)}
     >
       <FieldGroup>
-        <Controller
-          name="firstName"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={field.name}>First name</FieldLabel>
-              <Input
-                {...field}
-                id={field.name}
-                type="text"
-                autoComplete="off"
-                placeholder="Jane"
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <Controller
+            name="firstName"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name}>First name</FieldLabel>
+                <Input
+                  {...field}
+                  id={field.name}
+                  type="text"
+                  autoComplete="off"
+                  placeholder="Jane"
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
 
-        <Controller
-          name="lastName"
-          control={form.control}
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={field.name}>Last name</FieldLabel>
-              <Input
-                {...field}
-                id={field.name}
-                type="text"
-                autoComplete="off"
-                placeholder="Doe"
-                aria-invalid={fieldState.invalid}
-              />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-            </Field>
-          )}
-        />
+          <Controller
+            name="lastName"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name}>Last name</FieldLabel>
+                <Input
+                  {...field}
+                  id={field.name}
+                  type="text"
+                  autoComplete="off"
+                  placeholder="Doe"
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+        </div>
 
         <Controller
           name="password"
