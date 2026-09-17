@@ -6,6 +6,7 @@ import { redisConfig } from './configs/redis.config.js';
 import { mailConfig } from './configs/mail.config.js';
 import { envValidationSchema } from './env.validation.js';
 import { ConfigService } from './config.service.js';
+import { telemetryConfig } from './configs/telemetry.config.js';
 
 @Global()
 @Module({
@@ -13,7 +14,13 @@ import { ConfigService } from './config.service.js';
     NestConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      load: [appConfig, databaseConfig, redisConfig, mailConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        redisConfig,
+        mailConfig,
+        telemetryConfig,
+      ],
       validationSchema: envValidationSchema,
     }),
   ],

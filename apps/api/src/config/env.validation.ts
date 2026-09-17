@@ -34,6 +34,10 @@ export const envValidationSchema = z.object({
   MAIL_USER: z.string().optional(),
   MAIL_PASSWORD: z.string().optional(),
   MAIL_FROM: z.string().email().default('no-reply@formlyst.dev'),
+
+  OBSERVE_APP_KEY: z.string().min(1),
+  OBSERVE_APP_SECRET: z.string().min(1),
+  OBSERVE_SERVICE_ID: z.string().default('api'),
 });
 
 export type EnvSchema = z.infer<typeof envValidationSchema>;

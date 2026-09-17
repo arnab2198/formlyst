@@ -4,12 +4,14 @@ import { appConfig } from './configs/app.config.js';
 import { databaseConfig } from './configs/database.config.js';
 import { redisConfig } from './configs/redis.config.js';
 import { mailConfig } from './configs/mail.config.js';
+import { telemetryConfig } from './configs/telemetry.config.js';
 
 export interface AppConfiguration {
   app: ConfigType<typeof appConfig>;
   database: ConfigType<typeof databaseConfig>;
   redis: ConfigType<typeof redisConfig>;
   mail: ConfigType<typeof mailConfig>;
+  telemetry: ConfigType<typeof telemetryConfig>;
 }
 
 @Injectable()
@@ -28,6 +30,10 @@ export class ConfigService extends NestConfigService<AppConfiguration, true> {
 
   get mail() {
     return this.get('mail', { infer: true });
+  }
+
+  get telemetry() {
+    return this.get('telemetry', { infer: true });
   }
 
   isProduction(): boolean {
