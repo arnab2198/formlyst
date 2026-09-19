@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useHydrated } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
 import { Controller, useForm } from 'react-hook-form'
 import { Button } from '#/components/ui/button'
 import {
@@ -9,12 +10,13 @@ import {
   FieldLabel,
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
+import { signupStart } from '#/server/auth/auth.functions'
 import { signUpEmailStepSchema } from '@formlyst/utils'
 import type { SignUpEmailStepValues } from '@formlyst/utils'
 
 interface SignUpStepOneProps {
   defaultEmail: string
-  onSubmitStep: (values: SignUpEmailStepValues) => void
+  onSubmitStep: (values: SignUpEmailStepValues, maskedEmail?: string) => void
 }
 
 export function SignUpStepOne({
@@ -22,6 +24,7 @@ export function SignUpStepOne({
   onSubmitStep,
 }: SignUpStepOneProps) {
   const hydrated = useHydrated()
+  const signupStartFn = useServerFn(signupStart)
   const form = useForm<SignUpEmailStepValues>({
     resolver: zodResolver(signUpEmailStepSchema),
     defaultValues: { email: defaultEmail },
@@ -30,12 +33,29 @@ export function SignUpStepOne({
     disabled: !hydrated,
   })
 
+  const onSubmit = form.handleSubmit(async (values) => {
+    try {
+      const result = await signupStartFn({ data: values })
+      if (result.nextStep === 'ALREADY_REGISTERED') {
+        form.setError('email', {
+          message: 'This email is already registered. Try signing in instead.',
+        })
+        return
+      }
+      onSubmitStep(values, result.maskedEmail)
+    } catch {
+      form.setError('email', {
+        message: 'Something went wrong, please try again.',
+      })
+    }
+  })
+
   return (
     <form
       className="mt-6"
       noValidate
       autoComplete="off"
-      onSubmit={form.handleSubmit(onSubmitStep)}
+      onSubmit={onSubmit}
     >
       <FieldGroup>
         <Controller

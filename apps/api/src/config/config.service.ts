@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService as NestConfigService, ConfigType } from '@nestjs/config';
 import { appConfig } from './configs/app.config.js';
+import { authConfig } from './configs/auth.config.js';
 import { databaseConfig } from './configs/database.config.js';
 import { redisConfig } from './configs/redis.config.js';
 import { mailConfig } from './configs/mail.config.js';
@@ -8,6 +9,7 @@ import { telemetryConfig } from './configs/telemetry.config.js';
 
 export interface AppConfiguration {
   app: ConfigType<typeof appConfig>;
+  auth: ConfigType<typeof authConfig>;
   database: ConfigType<typeof databaseConfig>;
   redis: ConfigType<typeof redisConfig>;
   mail: ConfigType<typeof mailConfig>;
@@ -18,6 +20,10 @@ export interface AppConfiguration {
 export class ConfigService extends NestConfigService<AppConfiguration, true> {
   get app() {
     return this.get('app', { infer: true });
+  }
+
+  get auth() {
+    return this.get('auth', { infer: true });
   }
 
   get database() {

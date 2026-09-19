@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useHydrated } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
 import { Controller, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import {
   Field,
@@ -9,6 +11,7 @@ import {
   FieldLabel,
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
+import { forgotPassword } from '#/server/auth/auth.functions'
 import { forgotPasswordSchema } from '@formlyst/utils'
 import type { ForgotPasswordFormValues } from '@formlyst/utils'
 import { Fragment } from 'react'
@@ -19,6 +22,7 @@ const DEFAULT_VALUES: ForgotPasswordFormValues = {
 
 export function ForgotPasswordForm() {
   const hydrated = useHydrated()
+  const forgotPasswordFn = useServerFn(forgotPassword)
   const form = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: DEFAULT_VALUES,
@@ -27,8 +31,11 @@ export function ForgotPasswordForm() {
     disabled: !hydrated,
   })
 
-  function onSubmit(values: ForgotPasswordFormValues) {
-    console.log(values)
+  async function onSubmit(values: ForgotPasswordFormValues) {
+    // Always the same message, regardless of whether the email exists.
+    await forgotPasswordFn({ data: values }).catch(() => undefined)
+    toast.success("If that email is registered, we've sent a reset link.")
+    form.reset(DEFAULT_VALUES)
   }
 
   return (

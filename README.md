@@ -14,16 +14,33 @@ Plus two shared packages consumed by both apps:
 
 - Node.js
 - [pnpm](https://pnpm.io/)
+- [PostgreSQL](https://www.postgresql.org/) (with the `citext` extension available — the app creates it itself on first migration)
+- [Redis](https://redis.io/) — sessions, OTP/rate-limit counters, and all auth tokens live here, not in Postgres
 
 ## Getting started
 
 ```bash
 pnpm install
 pnpm build:packages
+
+# copy env templates and fill in the values (see "Environment variables" below)
+cp apps/api/.env.example apps/api/.env
+cp apps/client/.env.example apps/client/.env
+
+pnpm --filter api run migration:run
 pnpm dev
 ```
 
 `pnpm build:packages` compiles `@formlyst/types` and `@formlyst/utils` to `dist/` — both apps import that compiled output, so it must exist before `nest start`/`vite dev` can resolve them. `pnpm dev` then runs both apps concurrently — the api via `nest start --watch` and the client via `vite dev` — but does not watch the packages; re-run `pnpm build:packages` after changing their source.
+
+### Environment variables
+
+Both apps need a local `.env` (gitignored) — start from their `.env.example`:
+
+- **`apps/api/.env`** — app/database/Redis/mail config plus the auth section: `INTERNAL_API_KEY` (shared secret the client sends on every request except the two Google OAuth routes — generate one with e.g. `openssl rand -hex 32`), token TTLs, and `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_CALLBACK_URL` (optional — the app boots fine without them, Google sign-in just won't work until they're set).
+- **`apps/client/.env`** — `INTERNAL_API_KEY` (must match `apps/api/.env`'s value exactly), `API_BASE_URL`/`PUBLIC_API_BASE_URL` (the NestJS API's address — same value in local dev, since there's no separate public/private split), `APP_ORIGIN` (used for CSRF origin checks), and `SESSION_SECRET` (≥32 characters, seals the session cookie — generate one the same way as `INTERNAL_API_KEY`).
+
+Run `pnpm --filter api run migration:run` once Postgres is reachable and `apps/api/.env` is filled in — it also creates the `citext` extension, so no manual `CREATE EXTENSION` step is needed.
 
 ## Commands
 
@@ -42,13 +59,14 @@ Run these from the repo root. Each fans out to both apps via `pnpm --filter`; ap
 | `pnpm test` | Runs api's vitest suite (client has no test runner configured yet) |
 | `pnpm build:packages` | Builds `@formlyst/types` and `@formlyst/utils` to `dist/` |
 | `pnpm typecheck:packages` | `tsc --noEmit` on the shared packages only |
+| `pnpm --filter api run migration:run` | Applies pending TypeORM migrations (`:generate`/`:create`/`:revert` also exist) |
 
 ### Shared packages
 
 - `packages/types` and `packages/utils` are `tsc`-built ESM packages (`dist/` output, declaration files) consumed via `"workspace:*"` from both apps.
 - `pnpm build`/`pnpm build:api`/`pnpm build:client` (and their `typecheck` equivalents) always build the packages first — both apps import compiled `dist/` output, not the packages' TS source, so a fresh clone needs that build once before either app compiles.
 - `pnpm dev` does not watch the packages. After editing `packages/*/src`, re-run `pnpm build:packages`, or run `pnpm --filter @formlyst/utils run dev` (or `@formlyst/types`) for a `tsc --watch` loop.
-- `packages/types/src/user.ts` holds the `User` interface; `packages/utils/src/schemas/` holds the shared Zod schemas (`shared.ts`, `signin.ts`, `signup.ts`, `forgot-password.ts`) and `packages/utils/src/date.ts` holds `formatDate`.
+- `packages/types/src/user.ts` holds the `User` interface; `packages/utils/src/schemas/` holds the shared Zod schemas (`shared.ts`, `signin.ts`, `signup.ts`, `forgot-password.ts`, `reset-password.ts`, `set-password.ts`) and `packages/utils/src/date.ts` holds `formatDate`.
 
 ### api specifics
 
@@ -56,6 +74,7 @@ Run these from the repo root. Each fans out to both apps via `pnpm --filter`; ap
 - To run a single test file or pattern: `pnpm --filter api exec vitest run src/app.controller.spec.ts` or add `-t "test name"`.
 - Additional scripts: `test:watch`, `test:cov`, `test:debug` (`--inspect-brk --no-file-parallelism`), run via `pnpm --filter api run <script>`.
 - Linting is via [oxlint](https://oxc.rs/docs/guide/usage/linter.html), not eslint.
+- **Auth (`src/auth/`)**: full signup/signin/signout/refresh/password-reset/Google-OAuth system — Postgres (TypeORM) for users/identities/OTP+reset tokens, Redis for all sessions and short-lived tokens (opaque strings, no JWTs). Migrations must use TypeORM's QueryRunner schema-builder API, not raw SQL — see `CLAUDE.md` for the full architecture and the reasoning behind it.
 
 ### client specifics
 
@@ -69,6 +88,7 @@ Run these from the repo root. Each fans out to both apps via `pnpm --filter`; ap
 - UI components use [shadcn/ui](https://ui.shadcn.com/) (`style: "radix-mira"`, Tailwind v4, lucide icons). Add a component with `pnpm dlx shadcn@latest add <component>`.
 - Internal links use `Link` from `@tanstack/react-router` (`<Link to="/signin">`), not a raw `<a href>` — reserve `<a>` for external URLs.
 - Linting is eslint via `@tanstack/eslint-config`; formatting is prettier.
+- **Auth (`src/server/auth/`, `src/routes/_auth/`, `src/routes/api/auth/google/`)**: this app is the BFF — it owns the one sealed session cookie (`useAppSession`, `__Host-app-session`) and is the only thing that calls the private NestJS API (via `Http`/`AuthApi` in `src/lib/`), except the two Google OAuth routes, which the browser hits directly. See `CLAUDE.md` for the env-var/import-boundary gotchas and the error-boundary convention this introduced.
 
 ## Project structure
 

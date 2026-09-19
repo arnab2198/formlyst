@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import { Fragment, useState } from 'react'
 import { toast } from 'sonner'
 import { SignUpStepOne } from './signup/signup-step-one'
@@ -14,8 +14,13 @@ const TOTAL_STEPS = 3
 
 type Step = 1 | 2 | 3
 
-export function SignUpForm() {
-  const [step, setStep] = useState<Step>(1)
+interface SignUpFormProps {
+  initialStep?: Step
+}
+
+export function SignUpForm({ initialStep = 1 }: SignUpFormProps) {
+  const router = useRouter()
+  const [step, setStep] = useState<Step>(initialStep)
   const [email, setEmail] = useState('')
 
   function handleEmailStep(values: SignUpEmailStepValues) {
@@ -27,9 +32,9 @@ export function SignUpForm() {
     setStep(3)
   }
 
-  function handleDetailsStep(values: SignUpDetailsStepValues) {
-    console.log({ email, ...values })
+  function handleDetailsStep(_values: SignUpDetailsStepValues) {
     toast.success('Registered successfully')
+    router.navigate({ to: '/' })
   }
 
   function goToPreviousStep() {

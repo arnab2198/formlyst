@@ -76,12 +76,10 @@ export function seo(options: SeoOptions = {}): {
     { name: 'twitter:image', content: imageUrl },
   ]
 
-  const links: SeoLinks = canonicalUrl
-    ? [
-        { rel: 'canonical', href: canonicalUrl },
-        { rel: 'stylesheet', href: appCss },
-      ]
-    : []
+  const links: SeoLinks = [
+    { rel: 'stylesheet', href: appCss },
+    ...(canonicalUrl ? [{ rel: 'canonical', href: canonicalUrl }] : []),
+  ]
 
   const scripts: SeoScripts = jsonLd
     ? [{ type: 'application/ld+json', children: JSON.stringify(jsonLd) }]

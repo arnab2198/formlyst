@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useHydrated } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
 import { Controller, useForm } from 'react-hook-form'
 import { Button } from '#/components/ui/button'
 import {
@@ -10,6 +11,7 @@ import {
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { PasswordInput } from '#/components/ui/password-input'
+import { completeProfile } from '#/server/auth/auth.functions'
 import { signUpDetailsStepSchema } from '@formlyst/utils'
 import type { SignUpDetailsStepValues } from '@formlyst/utils'
 
@@ -30,6 +32,7 @@ export function SignUpStepThree({
   onBack,
 }: SignUpStepThreeProps) {
   const hydrated = useHydrated()
+  const completeProfileFn = useServerFn(completeProfile)
   const form = useForm<SignUpDetailsStepValues>({
     resolver: zodResolver(signUpDetailsStepSchema),
     defaultValues: DEFAULT_VALUES,
@@ -38,12 +41,26 @@ export function SignUpStepThree({
     disabled: !hydrated,
   })
 
+  const onSubmit = form.handleSubmit(async (values) => {
+    try {
+      await completeProfileFn({ data: values })
+      onSubmitStep(values)
+    } catch (error) {
+      form.setError('root', {
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Something went wrong, please try again.',
+      })
+    }
+  })
+
   return (
     <form
       className="mt-6"
       noValidate
       autoComplete="off"
-      onSubmit={form.handleSubmit(onSubmitStep)}
+      onSubmit={onSubmit}
     >
       <FieldGroup>
         <div className="grid grid-cols-2 gap-4">
@@ -125,6 +142,12 @@ export function SignUpStepThree({
             </Field>
           )}
         />
+
+        {form.formState.errors.root && (
+          <p className="text-sm text-destructive">
+            {form.formState.errors.root.message}
+          </p>
+        )}
 
         <div className="grid grid-cols-2 gap-2">
           <Button

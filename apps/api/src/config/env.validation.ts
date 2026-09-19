@@ -15,6 +15,7 @@ export const envValidationSchema = z.object({
   PORT: z.coerce.number().int().positive().default(8000),
   APP_NAME: z.string().min(1).default('Formlyst API'),
   APP_URL: z.string().url().default('http://localhost:8000'),
+  CLIENT_URL: z.string().url().default('http://localhost:3000'),
 
   DATABASE_HOST: z.string().min(1).default('localhost'),
   DATABASE_PORT: z.coerce.number().int().positive().default(5432),
@@ -38,6 +39,36 @@ export const envValidationSchema = z.object({
   OBSERVE_APP_KEY: z.string().min(1),
   OBSERVE_APP_SECRET: z.string().min(1),
   OBSERVE_SERVICE_ID: z.string().default('api'),
+
+  INTERNAL_API_KEY: z.string().min(32),
+
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_CALLBACK_URL: z.string().url().optional(),
+
+  ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
+  REFRESH_TOKEN_TTL_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(2_592_000),
+  REFRESH_TOKEN_ABSOLUTE_MAX_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(7_776_000),
+  REGISTRATION_TOKEN_TTL_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(1_800),
+  OAUTH_STATE_TTL_SECONDS: z.coerce.number().int().positive().default(600),
+  LINK_INTENT_TTL_SECONDS: z.coerce.number().int().positive().default(300),
+  HANDOFF_CODE_TTL_SECONDS: z.coerce.number().int().positive().default(60),
+  OTP_TTL_SECONDS: z.coerce.number().int().positive().default(600),
+  OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
+
+  EMAIL_PROVIDER: z.enum(['console']).default('console'),
 });
 
 export type EnvSchema = z.infer<typeof envValidationSchema>;

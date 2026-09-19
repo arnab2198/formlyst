@@ -1,7 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useHydrated } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
 import { Controller, useForm } from 'react-hook-form'
 import { REGEXP_ONLY_DIGITS } from 'input-otp'
+import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import {
   Field,
@@ -15,6 +17,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from '#/components/ui/input-otp'
+import { resendOtp, verifyOtp } from '#/server/auth/auth.functions'
 import { maskString, signUpOtpStepSchema } from '@formlyst/utils'
 import type { SignUpOtpStepValues } from '@formlyst/utils'
 
@@ -42,6 +45,8 @@ export function SignUpStepTwo({
   onBack,
 }: SignUpStepTwoProps) {
   const hydrated = useHydrated()
+  const verifyOtpFn = useServerFn(verifyOtp)
+  const resendOtpFn = useServerFn(resendOtp)
   const form = useForm<SignUpOtpStepValues>({
     resolver: zodResolver(signUpOtpStepSchema),
     defaultValues: DEFAULT_VALUES,
@@ -50,7 +55,24 @@ export function SignUpStepTwo({
     disabled: !hydrated,
   })
 
-  const submitStep = form.handleSubmit(onSubmitStep)
+  const submitStep = form.handleSubmit(async (values) => {
+    try {
+      await verifyOtpFn({ data: { email, code: values.otp } })
+      onSubmitStep(values)
+    } catch {
+      form.setError('otp', { message: 'Incorrect code — please try again.' })
+      form.setValue('otp', '')
+    }
+  })
+
+  async function handleResend() {
+    try {
+      await resendOtpFn({ data: { email } })
+      toast.success('A new code has been sent to your email')
+    } catch {
+      toast.error('Could not resend the code, please try again shortly')
+    }
+  }
 
   return (
     <form className="mt-6" noValidate autoComplete="off" onSubmit={submitStep}>
@@ -90,6 +112,17 @@ export function SignUpStepTwo({
             </Field>
           )}
         />
+
+        <Button
+          disabled={!hydrated}
+          size="sm"
+          type="button"
+          variant="link"
+          className="justify-self-start px-0"
+          onClick={handleResend}
+        >
+          Resend code
+        </Button>
 
         <div className="grid grid-cols-2 gap-2">
           <Button

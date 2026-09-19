@@ -11,9 +11,11 @@ import {
 } from '#/components/ui/field'
 import { Input } from '#/components/ui/input'
 import { PasswordInput } from '#/components/ui/password-input'
+import { signIn } from '#/server/auth/auth.functions'
 import { signInSchema } from '@formlyst/utils'
 import type { SignInFormValues } from '@formlyst/utils'
-import { useHydrated, Link } from '@tanstack/react-router'
+import { useHydrated, useRouter, Link } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
 import { Fragment } from 'react'
 
 const DEFAULT_VALUES: SignInFormValues = {
@@ -24,6 +26,8 @@ const DEFAULT_VALUES: SignInFormValues = {
 
 export function SignInForm() {
   const hydrated = useHydrated()
+  const router = useRouter()
+  const signInFn = useServerFn(signIn)
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
     defaultValues: DEFAULT_VALUES,
@@ -32,8 +36,17 @@ export function SignInForm() {
     disabled: !hydrated,
   })
 
-  function onSubmit(values: SignInFormValues) {
-    console.log(values)
+  async function onSubmit(values: SignInFormValues) {
+    try {
+      await signInFn({
+        data: { email: values.email, password: values.password },
+      })
+      router.navigate({ to: '/' })
+    } catch {
+      form.setError('root', {
+        message: 'Invalid email or password',
+      })
+    }
   }
 
   return (
@@ -111,6 +124,12 @@ export function SignInForm() {
             )}
           />
 
+          {form.formState.errors.root && (
+            <p className="text-sm text-destructive">
+              {form.formState.errors.root.message}
+            </p>
+          )}
+
           <Button
             disabled={!hydrated}
             size="lg"
@@ -128,14 +147,17 @@ export function SignInForm() {
             type="button"
             variant="outline"
             className="w-full"
+            asChild
           >
-            <img
-              src="/images/google-icon.svg"
-              alt=""
-              className="size-4"
-              data-icon="inline-start"
-            />
-            Sign in with Google
+            <a href="/api/auth/google/start?intent=auth">
+              <img
+                src="/images/google-icon.svg"
+                alt=""
+                className="size-4"
+                data-icon="inline-start"
+              />
+              Sign in with Google
+            </a>
           </Button>
         </FieldGroup>
       </form>

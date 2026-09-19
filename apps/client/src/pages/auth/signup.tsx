@@ -1,6 +1,10 @@
 import { SignUpForm } from '#/components/forms/signup-form'
 
-export function SignUpPage() {
+interface SignUpPageProps {
+  initialStep?: 1 | 2 | 3
+}
+
+export function SignUpPage({ initialStep }: SignUpPageProps) {
   return (
     <>
       <div className="flex flex-col gap-1.5">
@@ -12,7 +16,7 @@ export function SignUpPage() {
         </p>
       </div>
 
-      <SignUpForm />
+      <SignUpForm initialStep={initialStep} />
     </>
   )
 }

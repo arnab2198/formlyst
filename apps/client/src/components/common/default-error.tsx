@@ -1,18 +1,13 @@
 import { Logo } from '#/components/common/logo'
 import { Button } from '#/components/ui/button'
 import { env } from '#/env'
+import { getErrorDetails } from '#/lib/error-details'
 import type { ErrorComponentProps } from '@tanstack/react-router'
-import { Link } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import { ServerCrash } from 'lucide-react'
 
-function getErrorDetails(error: unknown) {
-  if (error instanceof Error) {
-    return { message: error.message, stack: error.stack }
-  }
-  return { message: String(error), stack: undefined }
-}
-
-export function DefaultError({ error, info, reset }: ErrorComponentProps) {
+export function DefaultError({ error, info }: ErrorComponentProps) {
+  const router = useRouter()
   const isDev = env.NODE_ENV === 'development'
   const { message, stack } = getErrorDetails(error)
 
@@ -46,7 +41,7 @@ export function DefaultError({ error, info, reset }: ErrorComponentProps) {
           <Button size="lg" variant="outline" asChild>
             <Link to="/">Go home</Link>
           </Button>
-          <Button size="lg" type="button" onClick={reset}>
+          <Button size="lg" type="button" onClick={() => router.invalidate()}>
             Try again
           </Button>
         </div>

@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { AuthErrorFallback } from '#/components/common/auth-error-fallback'
 import { SignInPage } from '#/pages/auth/signin'
 import { seo } from '#/lib/seo'
 
@@ -11,5 +12,6 @@ export const Route = createFileRoute('/_auth/signin')({
       noIndex: true,
       canonicalPath: match.pathname,
     }),
+  errorComponent: AuthErrorFallback,
   component: SignInPage,
 })
