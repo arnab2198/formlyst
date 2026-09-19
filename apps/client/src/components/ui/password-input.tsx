@@ -20,7 +20,7 @@ function PasswordInput({
         />
         <Button
           tabIndex={-1}
-          className="absolute top-0 right-0 h-full px-3 hover:bg-transparent"
+          className="absolute top-0 right-0 h-full px-3 hover:bg-transparent dark:hover:bg-transparent"
           onClick={() => setShowPassword(!showPassword)}
           size="icon"
           type="button"

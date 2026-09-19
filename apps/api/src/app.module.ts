@@ -5,6 +5,7 @@ import { AppService } from './app.service.js';
 import { ConfigModule } from './config/config.module.js';
 import { CommonModule } from './common/common.module.js';
 import { ConfigService } from './config/config.service.js';
+import { DatabaseModule } from './database/database.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -12,6 +13,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
   imports: [
     ConfigModule,
     CommonModule,
+    DatabaseModule,
     ObserveModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
