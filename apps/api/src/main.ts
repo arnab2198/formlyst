@@ -6,6 +6,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     instrument: ObserveInstrument,
   });
+  app.enableShutdownHooks();
   const configService = app.get(ConfigService);
   await app.listen(configService.app.port);
 }

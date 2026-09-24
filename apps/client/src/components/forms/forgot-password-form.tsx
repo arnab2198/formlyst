@@ -32,7 +32,6 @@ export function ForgotPasswordForm() {
   })
 
   async function onSubmit(values: ForgotPasswordFormValues) {
-    // Always the same message, regardless of whether the email exists.
     await forgotPasswordFn({ data: values }).catch(() => undefined)
     toast.success("If that email is registered, we've sent a reset link.")
     form.reset(DEFAULT_VALUES)

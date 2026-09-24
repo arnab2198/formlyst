@@ -37,7 +37,7 @@ pnpm dev
 
 Both apps need a local `.env` (gitignored) — start from their `.env.example`:
 
-- **`apps/api/.env`** — app/database/Redis/mail config plus the auth section: `INTERNAL_API_KEY` (shared secret the client sends on every request except the two Google OAuth routes — generate one with e.g. `openssl rand -hex 32`), token TTLs, and `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_CALLBACK_URL` (optional — the app boots fine without them, Google sign-in just won't work until they're set).
+- **`apps/api/.env`** — app/database/Redis/mail config plus the auth section: `INTERNAL_API_KEY` (shared secret the client sends on every request except the two Google OAuth routes — generate one with e.g. `openssl rand -hex 32`), token TTLs, and `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_CALLBACK_URL` (optional — the app boots fine without them, Google sign-in just won't work until they're set). `MAIL_HOST`/`MAIL_PORT`/`MAIL_SECURE`/`MAIL_USER`/`MAIL_PASSWORD` need real SMTP credentials (e.g. a [Mailtrap](https://mailtrap.io/) sandbox inbox for local dev) — the app boots fine without them, but OTP and password-reset emails will fail in the background (check the api logs) rather than block the request, since sending happens via a queued job, not inline. `MAIL_SECURE` should be `false` for STARTTLS ports like 587/2525, and only `true` for implicit-TLS port 465 — a mismatch here fails with a TLS handshake error, not an auth error, which can be confusing to debug.
 - **`apps/client/.env`** — `INTERNAL_API_KEY` (must match `apps/api/.env`'s value exactly), `API_BASE_URL`/`PUBLIC_API_BASE_URL` (the NestJS API's address — same value in local dev, since there's no separate public/private split), `APP_ORIGIN` (used for CSRF origin checks), and `SESSION_SECRET` (≥32 characters, seals the session cookie — generate one the same way as `INTERNAL_API_KEY`).
 
 Run `pnpm --filter api run migration:run` once Postgres is reachable and `apps/api/.env` is filled in — it also creates the `citext` extension, so no manual `CREATE EXTENSION` step is needed.
@@ -75,6 +75,7 @@ Run these from the repo root. Each fans out to both apps via `pnpm --filter`; ap
 - Additional scripts: `test:watch`, `test:cov`, `test:debug` (`--inspect-brk --no-file-parallelism`), run via `pnpm --filter api run <script>`.
 - Linting is via [oxlint](https://oxc.rs/docs/guide/usage/linter.html), not eslint.
 - **Auth (`src/auth/`)**: full signup/signin/signout/refresh/password-reset/Google-OAuth system — Postgres (TypeORM) for users/identities/OTP+reset tokens, Redis for all sessions and short-lived tokens (opaque strings, no JWTs). Migrations must use TypeORM's QueryRunner schema-builder API, not raw SQL — see `CLAUDE.md` for the full architecture and the reasoning behind it.
+- **Email (`src/common/email/`)**: OTP and password-reset emails are real SMTP via `nodemailer`, rendered from Handlebars templates, sent from a BullMQ background job (queue: `email`) rather than inline in the request — see `CLAUDE.md` for the queue/worker split and the Redis connection gotcha behind it.
 
 ### client specifics
 

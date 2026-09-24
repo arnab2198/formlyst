@@ -2,13 +2,6 @@ import { createEnv } from '@t3-oss/env-core'
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { z } from 'zod'
 
-// TanStack Start reads env from two different places per environment — see
-// https://tanstack.com/start/latest/docs/framework/react/guide/environment-variables.
-// `process.env` on the server (populated at process start; this app deploys
-// as a Node server via Nitro's node-server preset, so this is safe — it
-// would need per-request handling on an edge runtime instead), and
-// `import.meta.env` on the client, which only ever exposes `VITE_`-prefixed
-// keys to the browser bundle.
 const getRuntimeEnv = createIsomorphicFn()
   .server(() => process.env)
   .client(() => import.meta.env)

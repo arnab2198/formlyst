@@ -12,6 +12,7 @@ import { CommonModule } from './common/common.module.js';
 import { ConfigService } from './config/config.service.js';
 import { DatabaseModule } from './database/database.module.js';
 import { RedisModule } from './common/redis/redis.module.js';
+import { QueueModule } from './common/queue/queue.module.js';
 import { EmailModule } from './common/email/email.module.js';
 import { RateLimitModule } from './common/rate-limit/rate-limit.module.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -25,6 +26,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     CommonModule,
     DatabaseModule,
     RedisModule,
+    QueueModule,
     EmailModule,
     RateLimitModule,
     AuthModule,

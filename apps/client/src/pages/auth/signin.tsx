@@ -1,3 +1,4 @@
+import { toast } from 'sonner'
 import { SignInForm } from '#/components/forms/signin-form'
 
 export function SignInPage() {
@@ -15,4 +16,14 @@ export function SignInPage() {
       <SignInForm />
     </>
   )
+}
+
+export function notifyGoogleSignInError(searchParams: { googleError?: string }) {
+  if (searchParams.googleError === 'access_denied') {
+    toast.error('Google sign-in was cancelled')
+  } else if (searchParams.googleError === 'state_expired') {
+    toast.error('Your sign-in session expired, please try again')
+  } else if (searchParams.googleError) {
+    toast.error('Could not sign in with Google, please try again')
+  }
 }

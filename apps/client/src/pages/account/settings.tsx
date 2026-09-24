@@ -26,7 +26,7 @@ export function AccountSettingsPage({
 
   async function handleSignOutAll() {
     await signOutAllFn()
-    router.navigate({ to: '/signin' })
+    router.navigate({ to: '/signin', replace: true })
   }
 
   return (

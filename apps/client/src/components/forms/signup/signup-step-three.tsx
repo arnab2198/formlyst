@@ -24,12 +24,10 @@ const DEFAULT_VALUES: SignUpDetailsStepValues = {
 
 interface SignUpStepThreeProps {
   onSubmitStep: (values: SignUpDetailsStepValues) => void
-  onBack: () => void
 }
 
 export function SignUpStepThree({
   onSubmitStep,
-  onBack,
 }: SignUpStepThreeProps) {
   const hydrated = useHydrated()
   const completeProfileFn = useServerFn(completeProfile)
@@ -149,26 +147,9 @@ export function SignUpStepThree({
           </p>
         )}
 
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            disabled={!hydrated}
-            size="lg"
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={onBack}
-          >
-            Back
-          </Button>
-          <Button
-            disabled={!hydrated}
-            size="lg"
-            type="submit"
-            className="w-full"
-          >
-            Create account
-          </Button>
-        </div>
+        <Button disabled={!hydrated} size="lg" type="submit" className="w-full">
+          Create account
+        </Button>
       </FieldGroup>
     </form>
   )

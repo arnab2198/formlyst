@@ -32,6 +32,8 @@ import type { SessionMeta, OAuthStateData } from './session-store.service.js';
 import { SessionStoreService } from './session-store.service.js';
 
 const PASSWORD_RESET_TTL_SECONDS = 1800;
+// Keep in sync with the client's resend-button countdown in signup-step-two.tsx.
+const OTP_ISSUE_COOLDOWN_SECONDS = 60;
 
 type GoogleOutcome =
   | { type: 'auth'; handoffCode: string }
@@ -52,22 +54,9 @@ export class AuthService {
     @Inject(EMAIL_SERVICE) private readonly emailService: EmailService,
   ) {}
 
-  // ---------------------------------------------------------------------
-  // Signup
-  // ---------------------------------------------------------------------
-
   @Transactional()
   async signupStart(email: string, ip: string) {
     const normalized = normalizeEmail(email);
-
-    const withinLimits = await this.consumeOtpRateLimits(normalized, ip);
-    if (!withinLimits) {
-      throw new HttpException(
-        'Too many requests, please try again later',
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
-    }
-
     let user = await this.userRepo.findByEmail(normalized);
 
     if (user?.registrationStatus === RegistrationStatus.COMPLETE) {
@@ -81,7 +70,8 @@ export class AuthService {
       });
     }
 
-    await this.issueOtp(user.id, normalized);
+    await this.issueOtpIfAllowed(user.id, normalized, ip);
+
     return {
       nextStep: 'VERIFY_EMAIL' as const,
       maskedEmail: maskEmail(normalized),
@@ -91,26 +81,38 @@ export class AuthService {
   @Transactional()
   async signupResendOtp(email: string, ip: string): Promise<{ ok: true }> {
     const normalized = normalizeEmail(email);
-
-    const cooldownOk = await this.rateLimit.consume(
-      `ratelimit:otp-resend-cooldown:${normalized}`,
-      1,
-      60,
-    );
-    const withinLimits =
-      cooldownOk && (await this.consumeOtpRateLimits(normalized, ip));
-
-    if (!withinLimits) {
-      return { ok: true };
-    }
-
     const user = await this.userRepo.findByEmail(normalized);
     if (!user || user.registrationStatus === RegistrationStatus.COMPLETE) {
       return { ok: true };
     }
 
-    await this.issueOtp(user.id, normalized);
+    // Swallow rate-limit errors: this endpoint always answers ok:true so it can't be used to probe account existence.
+    await this.issueOtpIfAllowed(user.id, normalized, ip).catch(() => undefined);
     return { ok: true };
+  }
+
+  // Sole choke point for sending a signup OTP, so signupStart can't bypass signupResendOtp's cooldown by being a different endpoint.
+  private async issueOtpIfAllowed(
+    userId: string,
+    email: string,
+    ip: string,
+  ): Promise<void> {
+    const cooldownOk = await this.rateLimit.consume(
+      `ratelimit:otp-issue-cooldown:${email}`,
+      1,
+      OTP_ISSUE_COOLDOWN_SECONDS,
+    );
+    if (!cooldownOk) return;
+
+    const withinLimits = await this.consumeOtpRateLimits(email, ip);
+    if (!withinLimits) {
+      throw new HttpException(
+        'Too many requests, please try again later',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    await this.issueOtp(userId, email);
   }
 
   @Transactional()
@@ -192,10 +194,6 @@ export class AuthService {
     };
   }
 
-  // ---------------------------------------------------------------------
-  // Signin / signout / refresh
-  // ---------------------------------------------------------------------
-
   async signin(email: string, password: string, meta: SessionMeta) {
     const normalized = normalizeEmail(email);
 
@@ -275,10 +273,6 @@ export class AuthService {
     };
   }
 
-  // ---------------------------------------------------------------------
-  // Password
-  // ---------------------------------------------------------------------
-
   @Transactional()
   async passwordForgot(email: string, ip: string): Promise<{ ok: true }> {
     const normalized = normalizeEmail(email);
@@ -312,7 +306,11 @@ export class AuthService {
       await this.emailService.send({
         to: normalized,
         subject: 'Reset your password',
-        text: `Reset your password: ${resetUrl}\nIt expires in ${PASSWORD_RESET_TTL_SECONDS / 60} minutes.`,
+        template: 'password-reset',
+        context: {
+          resetUrl,
+          expiresInMinutes: PASSWORD_RESET_TTL_SECONDS / 60,
+        },
       });
     }
 
@@ -361,10 +359,6 @@ export class AuthService {
     return { ok: true };
   }
 
-  // ---------------------------------------------------------------------
-  // Registration status
-  // ---------------------------------------------------------------------
-
   async registrationStatus(
     accessToken?: string,
     registrationToken?: string,
@@ -389,10 +383,6 @@ export class AuthService {
 
     return { registrationStatus: 'NOT_STARTED' };
   }
-
-  // ---------------------------------------------------------------------
-  // Google OAuth
-  // ---------------------------------------------------------------------
 
   consumeOAuthState(state: string): Promise<OAuthStateData | null> {
     return this.sessionStore.consumeOAuthState(state);
@@ -507,10 +497,6 @@ export class AuthService {
     return user;
   }
 
-  // ---------------------------------------------------------------------
-  // Internal helpers
-  // ---------------------------------------------------------------------
-
   private async issueOtp(userId: string, email: string): Promise<void> {
     await this.tokenRepo.revokeAllActive(userId, TokenType.EMAIL_VERIFICATION);
 
@@ -527,7 +513,11 @@ export class AuthService {
     await this.emailService.send({
       to: email,
       subject: 'Your verification code',
-      text: `Your verification code is ${raw}. It expires in ${Math.round(ttlSeconds / 60)} minutes.`,
+      template: 'otp-code',
+      context: {
+        code: raw,
+        expiresInMinutes: Math.round(ttlSeconds / 60),
+      },
     });
   }
 

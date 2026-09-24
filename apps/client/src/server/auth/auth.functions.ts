@@ -46,10 +46,6 @@ async function refreshTokens(refreshToken: string): Promise<AuthTokens> {
   return unwrap<AuthTokens>(response)
 }
 
-/**
- * Calls `request` with the session's access token, retrying once (after a
- * silent refresh) if the backend rejects it as expired.
- */
 async function callAuthenticated<T>(
   session: AppSession,
   request: (accessToken: string) => Promise<T>,
@@ -70,10 +66,6 @@ async function callAuthenticated<T>(
     return request(refreshed.accessToken)
   }
 }
-
-// ---------------------------------------------------------------------
-// Signup
-// ---------------------------------------------------------------------
 
 export const signupStart = createServerFn({ method: 'POST' })
   .middleware([
@@ -138,10 +130,6 @@ export const completeProfile = createServerFn({ method: 'POST' })
     })
     return { user }
   })
-
-// ---------------------------------------------------------------------
-// Signin / signout / registration status
-// ---------------------------------------------------------------------
 
 export const signIn = createServerFn({ method: 'POST' })
   .middleware([
@@ -236,10 +224,6 @@ export const listSessions = createServerFn({ method: 'GET' }).handler(
     )
   },
 )
-
-// ---------------------------------------------------------------------
-// Password
-// ---------------------------------------------------------------------
 
 export const forgotPassword = createServerFn({ method: 'POST' })
   .middleware([

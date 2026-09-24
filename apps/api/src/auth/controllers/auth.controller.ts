@@ -10,7 +10,6 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import type { Profile } from 'passport-google-oauth20';
@@ -24,6 +23,7 @@ import { SkipInternalKeyCheck } from '../decorators/skip-internal-key-check.deco
 import type { AuthenticatedRequest } from '../guards/access-token.guard.js';
 import { AccessTokenGuard } from '../guards/access-token.guard.js';
 import { GoogleAuthGuard } from '../guards/google-auth.guard.js';
+import { GoogleCallbackGuard } from '../guards/google-callback.guard.js';
 import { RefreshTokenGuard } from '../guards/refresh-token.guard.js';
 import { RegistrationTokenGuard } from '../guards/registration-token.guard.js';
 import type { SessionMeta } from '../services/session-store.service.js';
@@ -58,8 +58,6 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
-  // -- Signup --------------------------------------------------------
-
   @Post('signup/start')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Validate({ source: 'body', schema: signupStartSchema })
@@ -68,6 +66,7 @@ export class AuthController {
   }
 
   @Post('signup/resend-otp')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Validate({ source: 'body', schema: signupResendOtpSchema })
   signupResendOtp(@Body() body: SignupResendOtpDto, @Ip() ip: string) {
     return this.authService.signupResendOtp(body.email, ip);
@@ -94,8 +93,6 @@ export class AuthController {
       meta,
     );
   }
-
-  // -- Signin / signout / refresh ------------------------------------
 
   @Post('signin')
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
@@ -130,8 +127,6 @@ export class AuthController {
     return this.authService.refresh(refreshToken);
   }
 
-  // -- Registration status --------------------------------------------
-
   @Get('registration/status')
   registrationStatus(@Req() request: Request) {
     const header = request.headers.authorization;
@@ -145,8 +140,6 @@ export class AuthController {
       typeof registrationToken === 'string' ? registrationToken : undefined,
     );
   }
-
-  // -- Password ---------------------------------------------------------
 
   @Post('password/forgot')
   @HttpCode(HttpStatus.OK)
@@ -173,20 +166,16 @@ export class AuthController {
     return this.authService.setPassword(auth.userId, body.password);
   }
 
-  // -- Google OAuth -----------------------------------------------------
-
   @Get('google')
   @SkipInternalKeyCheck()
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @UseGuards(GoogleAuthGuard)
-  initiateGoogle() {
-    // never runs — GoogleAuthGuard performs the redirect to Google
-  }
+  initiateGoogle() {}
 
   @Get('google/callback')
   @SkipInternalKeyCheck()
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleCallbackGuard)
   async googleCallback(
     @Req() request: Request,
     @Res() response: Response,
@@ -196,6 +185,17 @@ export class AuthController {
     const state = await this.authService.consumeOAuthState(
       request.query.state as string,
     );
+
+    if (request.query.error || !request.user) {
+      const errorCode =
+        request.query.error === 'access_denied'
+          ? 'access_denied'
+          : 'oauth_failed';
+      return state?.intent === 'link'
+        ? response.redirect(`${clientUrl}/account/settings?linkError=${errorCode}`)
+        : response.redirect(`${clientUrl}/signin?googleError=${errorCode}`);
+    }
+
     if (!state) {
       return response.redirect(`${clientUrl}/signin?googleError=state_expired`);
     }

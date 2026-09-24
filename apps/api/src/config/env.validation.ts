@@ -67,8 +67,6 @@ export const envValidationSchema = z.object({
   HANDOFF_CODE_TTL_SECONDS: z.coerce.number().int().positive().default(60),
   OTP_TTL_SECONDS: z.coerce.number().int().positive().default(600),
   OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
-
-  EMAIL_PROVIDER: z.enum(['console']).default('console'),
 });
 
 export type EnvSchema = z.infer<typeof envValidationSchema>;

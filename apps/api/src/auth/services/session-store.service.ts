@@ -60,10 +60,6 @@ export class SessionStoreService {
     return this.configService.auth.tokenTtl;
   }
 
-  // ---------------------------------------------------------------------
-  // Sessions (access/refresh)
-  // ---------------------------------------------------------------------
-
   async issueSession(
     userId: string,
     meta: SessionMeta,
@@ -225,10 +221,6 @@ export class SessionStoreService {
     return summaries;
   }
 
-  // ---------------------------------------------------------------------
-  // Registration token (verify-otp -> complete-profile)
-  // ---------------------------------------------------------------------
-
   async issueRegistrationToken(userId: string): Promise<string> {
     const token = generateOpaqueToken();
     await this.redis.set(
@@ -247,10 +239,6 @@ export class SessionStoreService {
     return this.redis.getdel(this.registrationKey(token));
   }
 
-  // ---------------------------------------------------------------------
-  // OAuth state (CSRF/replay nonce for the Google redirect round-trip)
-  // ---------------------------------------------------------------------
-
   async issueOAuthState(data: OAuthStateData): Promise<string> {
     const state = generateOpaqueToken(32);
     await this.redis.set(
@@ -266,10 +254,6 @@ export class SessionStoreService {
     return raw ? (JSON.parse(raw) as OAuthStateData) : null;
   }
 
-  // ---------------------------------------------------------------------
-  // Link intent (carries "who is linking" across the Google redirect)
-  // ---------------------------------------------------------------------
-
   async issueLinkIntent(userId: string): Promise<string> {
     const code = generateOpaqueToken(32);
     await this.redis.set(
@@ -283,10 +267,6 @@ export class SessionStoreService {
   consumeLinkIntent(code: string): Promise<string | null> {
     return this.redis.getdel(this.linkIntentKey(code));
   }
-
-  // ---------------------------------------------------------------------
-  // Handoff (one-time code exchanged by Start after Google auth succeeds)
-  // ---------------------------------------------------------------------
 
   async issueHandoff(payload: unknown): Promise<string> {
     const code = generateOpaqueToken(32);
@@ -302,8 +282,6 @@ export class SessionStoreService {
     const raw = await this.redis.getdel(this.handoffKey(code));
     return raw ? (JSON.parse(raw) as T) : null;
   }
-
-  // ---------------------------------------------------------------------
 
   private hashRefreshToken(token: string): string {
     return hashToken(token);

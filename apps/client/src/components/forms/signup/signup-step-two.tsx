@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useHydrated } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
+import { useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { REGEXP_ONLY_DIGITS } from 'input-otp'
 import { toast } from 'sonner'
@@ -23,6 +24,8 @@ import type { SignUpOtpStepValues } from '@formlyst/utils'
 
 const DEFAULT_VALUES: SignUpOtpStepValues = { otp: '' }
 const OTP_LENGTH = 6
+// Mirrors OTP_ISSUE_COOLDOWN_SECONDS in the API's auth.service.ts.
+const RESEND_COOLDOWN_SECONDS = 60
 
 function maskEmailForDisplay(email: string): string {
   const [localPart, domain] = email.split('@')
@@ -47,6 +50,8 @@ export function SignUpStepTwo({
   const hydrated = useHydrated()
   const verifyOtpFn = useServerFn(verifyOtp)
   const resendOtpFn = useServerFn(resendOtp)
+  // Starts running: step one just sent a code, so an immediate resend would only hit the server cooldown.
+  const [resendCooldown, setResendCooldown] = useState(RESEND_COOLDOWN_SECONDS)
   const form = useForm<SignUpOtpStepValues>({
     resolver: zodResolver(signUpOtpStepSchema),
     defaultValues: DEFAULT_VALUES,
@@ -54,6 +59,14 @@ export function SignUpStepTwo({
     reValidateMode: 'onChange',
     disabled: !hydrated,
   })
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const interval = setInterval(() => {
+      setResendCooldown((current) => Math.max(current - 1, 0))
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [resendCooldown])
 
   const submitStep = form.handleSubmit(async (values) => {
     try {
@@ -68,6 +81,7 @@ export function SignUpStepTwo({
   async function handleResend() {
     try {
       await resendOtpFn({ data: { email } })
+      setResendCooldown(RESEND_COOLDOWN_SECONDS)
       toast.success('A new code has been sent to your email')
     } catch {
       toast.error('Could not resend the code, please try again shortly')
@@ -114,14 +128,16 @@ export function SignUpStepTwo({
         />
 
         <Button
-          disabled={!hydrated}
+          disabled={!hydrated || resendCooldown > 0}
           size="sm"
           type="button"
           variant="link"
           className="justify-self-start px-0"
           onClick={handleResend}
         >
-          Resend code
+          {resendCooldown > 0
+            ? `Resend code in ${resendCooldown}s`
+            : 'Resend code'}
         </Button>
 
         <div className="grid grid-cols-2 gap-2">

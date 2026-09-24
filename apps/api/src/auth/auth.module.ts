@@ -10,6 +10,7 @@ import { TokenEntity } from './entities/token.entity.js';
 import { UserEntity } from './entities/user.entity.js';
 import { AccessTokenGuard } from './guards/access-token.guard.js';
 import { GoogleAuthGuard } from './guards/google-auth.guard.js';
+import { GoogleCallbackGuard } from './guards/google-callback.guard.js';
 import { RefreshTokenGuard } from './guards/refresh-token.guard.js';
 import { RegistrationTokenGuard } from './guards/registration-token.guard.js';
 import { AuthIdentityRepository } from './repositories/auth-identity.repository.js';
@@ -41,6 +42,7 @@ import { GoogleStrategy } from './strategies/google.strategy.js';
     RegistrationTokenGuard,
     RefreshTokenGuard,
     GoogleAuthGuard,
+    GoogleCallbackGuard,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
   exports: [UserRepository, AuthIdentityRepository, TokenRepository],

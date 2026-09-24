@@ -24,7 +24,7 @@ export const Route = createFileRoute('/account/settings')({
   beforeLoad: async () => {
     const { user } = await getCurrentUser()
     if (!user) {
-      throw redirect({ to: '/signin' })
+      throw redirect({ to: '/signin', replace: true })
     }
     const { sessions } = await listSessions()
     return { user, sessions }

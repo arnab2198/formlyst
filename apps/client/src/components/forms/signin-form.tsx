@@ -17,6 +17,7 @@ import type { SignInFormValues } from '@formlyst/utils'
 import { useHydrated, useRouter, Link } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { Fragment } from 'react'
+import { toast } from 'sonner'
 
 const DEFAULT_VALUES: SignInFormValues = {
   email: '',
@@ -41,11 +42,11 @@ export function SignInForm() {
       await signInFn({
         data: { email: values.email, password: values.password },
       })
-      router.navigate({ to: '/' })
-    } catch {
-      form.setError('root', {
-        message: 'Invalid email or password',
-      })
+      router.navigate({ to: '/', replace: true })
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : 'Invalid email or password',
+      )
     }
   }
 

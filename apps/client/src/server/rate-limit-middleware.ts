@@ -6,9 +6,6 @@ interface Bucket {
   resetAt: number
 }
 
-// In-memory, best-effort — a UX nicety only. The backend's rate limiter
-// (backend doc §10) is the one that's actually load-bearing, since this
-// server function is directly callable and this check resets on redeploy.
 const buckets = new Map<string, Bucket>()
 
 function consume(key: string, max: number, windowMs: number): boolean {

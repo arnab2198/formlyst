@@ -38,5 +38,4 @@ export const authConfig = registerAs('auth', () => ({
     ttlSeconds: parseInt(process.env.OTP_TTL_SECONDS ?? '600', 10),
     maxAttempts: parseInt(process.env.OTP_MAX_ATTEMPTS ?? '5', 10),
   },
-  emailProvider: process.env.EMAIL_PROVIDER ?? 'console',
 }));

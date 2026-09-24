@@ -5,13 +5,6 @@ import type { ErrorComponentProps } from '@tanstack/react-router'
 import { Link, useRouter } from '@tanstack/react-router'
 import { ServerCrash } from 'lucide-react'
 
-/**
- * Scoped error fallback for routes nested under `_auth` (signin, signup,
- * forgot-password, reset-password). `AuthLayout` already renders the Logo
- * and page chrome around `<Outlet/>` — this only replaces the outlet's own
- * content, so it must fit inside that narrow column rather than assume it
- * owns the full viewport like `DefaultError` does.
- */
 export function AuthErrorFallback({ error, info }: ErrorComponentProps) {
   const router = useRouter()
   const isDev = env.NODE_ENV === 'development'

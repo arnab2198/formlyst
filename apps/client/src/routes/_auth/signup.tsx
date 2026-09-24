@@ -17,7 +17,7 @@ export const Route = createFileRoute('/_auth/signup')({
   loader: async () => {
     const { registrationStatus } = await getRegistrationStatus()
     if (registrationStatus === 'COMPLETE') {
-      throw redirect({ to: '/' })
+      throw redirect({ to: '/', replace: true })
     }
     return {
       initialStep:

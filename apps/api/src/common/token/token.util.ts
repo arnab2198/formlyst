@@ -1,7 +1,10 @@
 import { createHash, randomInt } from 'node:crypto';
 
+// Alphanumeric only: these tokens get embedded directly in URLs (reset-password
+// path segment, OAuth handoff query param) without percent-encoding, and
+// characters like # % & ^ have special meaning in a URL and corrupt it.
 const CHARSET =
-  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*-_';
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 export function generateOpaqueToken(length = 48): string {
   let out = '';

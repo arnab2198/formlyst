@@ -46,14 +46,13 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         },
       })
       toast.success('Your password has been reset')
-      router.navigate({ to: '/signin' })
+      router.navigate({ to: '/signin', replace: true })
     } catch (error) {
-      form.setError('root', {
-        message:
-          error instanceof Error
-            ? error.message
-            : 'This link has expired, please request a new one.',
-      })
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'This link has expired, please request a new one.',
+      )
     }
   })
 

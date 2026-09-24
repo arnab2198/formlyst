@@ -20,11 +20,6 @@ export class HttpError extends Error {
   }
 }
 
-/**
- * Server-only client for the private NestJS API — never import this from a
- * component or route `component`, only from `src/server/**` handlers, or the
- * internal API key would end up reachable from the browser bundle.
- */
 export const Http = axios.create({
   baseURL: env.API_BASE_URL,
   headers: {
@@ -42,7 +37,6 @@ Http.interceptors.response.use(undefined, (error: unknown) => {
   throw error instanceof Error ? error : new Error('Request failed')
 })
 
-/** Unwraps this codebase's `{ statusCode, message, data, success }` envelope. */
 export function unwrap<T>(response: AxiosResponse<ApiSuccessResponse<T>>): T {
   return response.data.data
 }

@@ -9,23 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as DashboardRouteImport } from './routes/_dashboard'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthSigninRouteImport } from './routes/_auth/signin'
 import { Route as AuthSignupRouteImport } from './routes/_auth/signup'
+import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
 import { Route as AccountSettingsRouteImport } from './routes/account/settings'
 import { Route as AuthResetPasswordTokenRouteImport } from './routes/_auth/reset-password.$token'
 import { Route as ApiAuthGoogleCallbackRouteImport } from './routes/api/auth/google/callback'
 import { Route as ApiAuthGoogleStartRouteImport } from './routes/api/auth/google/start'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/_dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
@@ -42,6 +42,11 @@ const AuthSignupRoute = AuthSignupRouteImport.update({
   id: '/signup',
   path: '/signup',
   getParentRoute: () => AuthRoute,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const AccountSettingsRoute = AccountSettingsRouteImport.update({
   id: '/account/settings',
@@ -65,7 +70,7 @@ const ApiAuthGoogleStartRoute = ApiAuthGoogleStartRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof DashboardIndexRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/signin': typeof AuthSigninRoute
   '/signup': typeof AuthSignupRoute
@@ -75,7 +80,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/google/start': typeof ApiAuthGoogleStartRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof DashboardIndexRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/signin': typeof AuthSigninRoute
   '/signup': typeof AuthSignupRoute
@@ -86,12 +91,13 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_auth': typeof AuthRouteWithChildren
+  '/_dashboard': typeof DashboardRouteWithChildren
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/signin': typeof AuthSigninRoute
   '/_auth/signup': typeof AuthSignupRoute
   '/account/settings': typeof AccountSettingsRoute
+  '/_dashboard/': typeof DashboardIndexRoute
   '/_auth/reset-password/$token': typeof AuthResetPasswordTokenRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
   '/api/auth/google/start': typeof ApiAuthGoogleStartRoute
@@ -119,20 +125,21 @@ export interface FileRouteTypes {
     | '/api/auth/google/start'
   id:
     | '__root__'
-    | '/'
     | '/_auth'
+    | '/_dashboard'
     | '/_auth/forgot-password'
     | '/_auth/signin'
     | '/_auth/signup'
     | '/account/settings'
+    | '/_dashboard/'
     | '/_auth/reset-password/$token'
     | '/api/auth/google/callback'
     | '/api/auth/google/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRouteWithChildren
+  DashboardRoute: typeof DashboardRouteWithChildren
   AccountSettingsRoute: typeof AccountSettingsRoute
   ApiAuthGoogleCallbackRoute: typeof ApiAuthGoogleCallbackRoute
   ApiAuthGoogleStartRoute: typeof ApiAuthGoogleStartRoute
@@ -140,18 +147,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_auth': {
       id: '/_auth'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_dashboard': {
+      id: '/_dashboard'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth/forgot-password': {
@@ -174,6 +181,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/signup'
       preLoaderRoute: typeof AuthSignupRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/_dashboard/': {
+      id: '/_dashboard/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/account/settings': {
       id: '/account/settings'
@@ -222,9 +236,21 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface DashboardRouteChildren {
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AuthRoute: AuthRouteWithChildren,
+  DashboardRoute: DashboardRouteWithChildren,
   AccountSettingsRoute: AccountSettingsRoute,
   ApiAuthGoogleCallbackRoute: ApiAuthGoogleCallbackRoute,
   ApiAuthGoogleStartRoute: ApiAuthGoogleStartRoute,

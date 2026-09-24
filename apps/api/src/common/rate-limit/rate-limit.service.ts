@@ -5,11 +5,6 @@ import { RedisService } from '../redis/redis.service.js';
 export class RateLimitService {
   constructor(private readonly redis: RedisService) {}
 
-  /**
-   * Increments a counter keyed by `key`, expiring after `windowSeconds` on
-   * the first hit in a window. Returns whether the count is still within
-   * `limit` (the current attempt included).
-   */
   async consume(
     key: string,
     limit: number,

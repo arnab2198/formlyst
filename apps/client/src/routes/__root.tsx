@@ -62,7 +62,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <ThemeProvider>
           {children}
-          <Toaster />
+          <Toaster position="bottom-center" />
           <TanstackDevtoolsPanel />
         </ThemeProvider>
         <Scripts />

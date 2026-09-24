@@ -34,11 +34,11 @@ export function SignUpForm({ initialStep = 1 }: SignUpFormProps) {
 
   function handleDetailsStep(_values: SignUpDetailsStepValues) {
     toast.success('Registered successfully')
-    router.navigate({ to: '/' })
+    router.navigate({ to: '/', replace: true })
   }
 
   function goToPreviousStep() {
-    setStep((current) => (current === 3 ? 2 : 1))
+    setStep(1)
   }
 
   return (
@@ -59,12 +59,7 @@ export function SignUpForm({ initialStep = 1 }: SignUpFormProps) {
         />
       )}
 
-      {step === 3 && (
-        <SignUpStepThree
-          onSubmitStep={handleDetailsStep}
-          onBack={goToPreviousStep}
-        />
-      )}
+      {step === 3 && <SignUpStepThree onSubmitStep={handleDetailsStep} />}
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{' '}
